@@ -22,8 +22,8 @@ func client() {
 
 	msgs, err := ch.Consume(
 		q.Name,
-		"",
-		true,
+		"",  // Name of the consumer, empty string automatically assigns one
+		true, // If the task processing the message can fail, this should be false
 		false,
 		false,
 		false,
@@ -47,7 +47,13 @@ func server() {
 	}
 
 	for {
-		_ = ch.Publish("", q.Name, false, false, msg)
+		_ = ch.Publish(
+			"",  // Default exchange
+			q.Name,
+			false,
+			false,
+			msg,
+		)
 	}
 }
 
@@ -61,7 +67,7 @@ func getQueue() (*amqp.Connection, *amqp.Channel, *amqp.Queue) {
 	q, err := ch.QueueDeclare(
 		"hello",
 		false,
-		false,
+		false,  // Delete messages when no consumer is active on the queue
 		false,
 		false,
 		nil,
