@@ -35,24 +35,22 @@ func main() {
 
 	dataQueue := qutils.GetQueue(*name, ch) // asserts that the queue was created properly (sending only needs exchange)
 
-	sensorQueue := qutils.GetQueue(qutils.SensorListQueue, ch) // Sensor Queue Discovery
-	msg := amqp.Publishing{
-		Body: []byte(*name),
-	}
+	publishQueueName(ch)
 
-	// Publish creation of new queue
-	_ = ch.Publish(
+	discoveryQueue := qutils.GetQueue("", ch)
+	_ = ch.QueueBind(
+		discoveryQueue.Name,
 		"",
-		sensorQueue.Name,
+		qutils.SensorDiscoveryExchange,
 		false,
-		false,
-		msg,
+		nil,
 	)
+
+	go listenForDiscoverRequests(discoveryQueue.Name, ch)
 
 	dur, _ := time.ParseDuration(strconv.Itoa(1000/(int(*freq))) + "ms")
 	signal := time.Tick(dur)
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
 
 	for range signal {
 		calcValue()
@@ -62,6 +60,7 @@ func main() {
 			Timestamp: time.Now(),
 		}
 		buf.Reset()
+		enc := gob.NewEncoder(buf)
 		_ = enc.Encode(reading)
 
 		msg := amqp.Publishing{
@@ -78,6 +77,38 @@ func main() {
 
 		log.Printf("Reading sent: %v", value)
 	}
+}
+
+func listenForDiscoverRequests(name string, ch *amqp.Channel) {
+	msgs, _ := ch.Consume(
+		name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	for range msgs {
+		publishQueueName(ch)
+	}
+}
+
+func publishQueueName(ch *amqp.Channel) {
+	// Sensor Queue Discovery
+	msg := amqp.Publishing{
+		Body: []byte(*name),
+	}
+
+	// Publish creation of new queue
+	_ = ch.Publish(
+		"amq.fanout",
+		"",
+		false,
+		false,
+		msg,
+	)
 }
 
 func calcValue() {
