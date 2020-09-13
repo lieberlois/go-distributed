@@ -7,6 +7,7 @@ import (
 	"github.com/streadway/amqp"
 	"go-distributed/src/distributed/dto"
 	"go-distributed/src/distributed/qutils"
+	"log"
 )
 
 const url = "amqp://guest:guest@localhost:5672"
@@ -72,7 +73,7 @@ func (ql *QueueListener) ListenForNewSource() {
 
 	fmt.Println("Listening for new sources")
 	for msg := range msgs {
-		fmt.Println("New source discovered")
+		log.Println("New source discovered")
 		ql.ea.PublishEvent("DataSourceDiscovered", string(msg.Body))
 		sourceChan, _ := ql.ch.Consume(
 			string(msg.Body),
