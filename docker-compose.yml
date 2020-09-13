@@ -6,3 +6,8 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
+
+  postgres:
+    build: ./pgconfig
+    ports:
+      - "5432:5432"

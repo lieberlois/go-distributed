@@ -33,11 +33,11 @@ func main() {
 	defer conn.Close()
 	defer ch.Close()
 
-	dataQueue := qutils.GetQueue(*name, ch) // asserts that the queue was created properly (sending only needs exchange)
+	dataQueue := qutils.GetQueue(*name, ch, false) // asserts that the queue was created properly (sending only needs exchange)
 
 	publishQueueName(ch)
 
-	discoveryQueue := qutils.GetQueue("", ch)
+	discoveryQueue := qutils.GetQueue("", ch, true)
 	_ = ch.QueueBind(
 		discoveryQueue.Name,
 		"",
