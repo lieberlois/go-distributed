@@ -54,13 +54,14 @@ func (wsc *websocketController) addSocket(socket *websocket.Conn) {
 func (wsc *websocketController) removeSocket(socket *websocket.Conn) {
 	wsc.mutex.Lock()
 	defer wsc.mutex.Unlock()
-
 	_ = socket.Close()
+
 	for i := range wsc.sockets {
 		if wsc.sockets[i] == socket {
-			wsc.sockets = append(wsc.sockets[:i], wsc.sockets[i+1])
+			wsc.sockets = append(wsc.sockets[:i], wsc.sockets[i+1:]...)
 		}
 	}
+
 }
 
 func (wsc *websocketController) sendMessage(msg message) {
