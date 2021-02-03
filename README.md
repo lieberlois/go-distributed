@@ -1,3 +1,7 @@
+# Pluralsight
+
+This repository follows [this](https://app.pluralsight.com/library/courses/go-build-distributed-applications/table-of-contents) course on pluralsight.
+
 # Startup
 
 1. Start the Website in `src\distributed\web`.
